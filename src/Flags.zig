@@ -5,6 +5,7 @@ const Option = struct {
     key: []const u8,
     value: []const u8,
 };
+
 const Flags = @This();
 
 allocator: std.mem.Allocator,
@@ -43,5 +44,12 @@ pub fn parse(self: *Flags, args: []const []const u8) !void {
                 }
             }
         }
+    }
+}
+
+pub fn deinit(self: Flags) void {
+    var i: usize = 0;
+    while (i < self.i) : (i += 1) {
+        self.allocator.free(self.options[i].key);
     }
 }
