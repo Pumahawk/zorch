@@ -16,15 +16,14 @@ pub fn main() !void {
     if (args.next()) |subcommand_name| {
         inline for (commands) |command| {
             if (isCommand(subcommand_name, command)) {
-                command.cmd(args);
+                command.cmd(&args);
                 return;
             }
         } else printCommandNotFound(subcommand_name);
-
     }
 }
 
-fn isCommand(name: [] const u8, command: cmd.Cmd) bool {
+fn isCommand(name: []const u8, command: cmd.Cmd) bool {
     if (std.mem.eql(u8, name, command.name)) {
         return true;
     } else {
