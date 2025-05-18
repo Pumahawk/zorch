@@ -6,7 +6,7 @@ const Cmd = cmd_p.Cmd;
 
 const print = std.debug.print;
 
-const Flags = struct {
+const Conf = struct {
     const Self = @This();
 
     allocator: std.mem.Allocator,
@@ -43,10 +43,8 @@ pub fn cmd() Cmd {
     };
 }
 
-pub fn serve(args: *ArgIterator) void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const allocator = gpa.allocator();
-    const flags = Flags.init(allocator, args) catch {
+pub fn serve(allocator: std.mem.Allocator, args: *ArgIterator) void {
+    const flags = Conf.init(allocator, args) catch {
         print("ERROR - Unable to read flags.\n", .{});
         return;
     };

@@ -9,6 +9,9 @@ const commands = [_]cmd.Cmd{
 };
 
 pub fn main() !void {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
     var args = std.process.args();
 
     _ = args.next();
@@ -16,7 +19,7 @@ pub fn main() !void {
     if (args.next()) |subcommand_name| {
         inline for (commands) |command| {
             if (isCommand(subcommand_name, command)) {
-                command.cmd(&args);
+                command.cmd(allocator, &args);
                 return;
             }
         } else printCommandNotFound(subcommand_name);
