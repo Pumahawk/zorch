@@ -1,45 +1,45 @@
 const std = @import("std");
+const max_args: usize = 100;
 
+const Option = struct {
+    key: []const u8,
+    value: []const u8,
+};
 const Flags = @This();
 
 allocator: std.mem.Allocator,
 i: usize,
-keys: [100][] const u8,
-values: [100]?[] const u8,
+options: [max_args]Option,
 
 pub fn init(allocator: std.mem.Allocator) Flags {
     return .{
         .i = 0,
-        .keys = undefined,
-        .values = undefined,
+        .options = undefined,
         .allocator = allocator,
     };
 }
 
-pub fn arg(self: *Flags, n: []const u8) !*?[] const u8 {
-    return if (self.i < self.keys.len) {
-        self.keys[self.i] = try self.allocator.dupe(u8, n);
-        self.values[self.i] = null;
-        const prop = &self.values[self.i];
+pub fn arg(self: *Flags, n: []const u8, def: []const u8) !*[]const u8 {
+    return if (self.i < self.options.len) {
+        self.options[self.i] = Option{
+            .key = try self.allocator.dupe(u8, n),
+            .value = try self.allocator.dupe(u8, def),
+        };
         self.i += 1;
-        return prop;
+        return &self.options[self.i - 1].value;
     } else error.BuffLen;
 }
 
-pub fn parse(self: *Flags, args: [] const [] const u8) !void {
+pub fn parse(self: *Flags, args: []const []const u8) !void {
     var i: usize = 0;
     while (i < args.len) : (i += 1) {
-        for (self.keys, 0..) | key, j | {
-            if (std.mem.eql(u8, key, args[i])) {
-                var address_opt = self.values[j];
+        for (&self.options) |*opt| {
+            if (std.mem.eql(u8, opt.key, args[i])) {
                 if (i + 1 < args.len) {
                     i += 1;
                     const adr = args[i];
-                    if (address_opt) |address| {
-                        self.allocator.free(address);
-                    }
-                    address_opt = try self.allocator.dupe(u8, adr);
-                    self.values[j] = address_opt;
+                    self.allocator.free(opt.value);
+                    opt.value = try self.allocator.dupe(u8, adr);
                 }
             }
         }

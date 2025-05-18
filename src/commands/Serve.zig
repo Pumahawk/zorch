@@ -15,11 +15,11 @@ const Conf = struct {
 
     fn init(allocator: std.mem.Allocator, args: []const []const u8) !Self {
         var flags = Flags.init(allocator);
-        const address_opt = try flags.arg("--address");
+        const address = try flags.arg("--address", "localshot:9000");
         try flags.parse(args);
         return .{
             .allocator = allocator,
-            .address = if (address_opt.*) |address| address else try allocator.dupe(u8, "localhost:9000"),
+            .address = address.*,
         };
     }
 
