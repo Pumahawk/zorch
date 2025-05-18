@@ -7,4 +7,4 @@ pub const Cmd = struct {
     cmd: CmdFn,
 };
 
-pub const CmdFn = fn (std.mem.Allocator, *ArgIterator) void;
+pub const CmdFn = fn (std.mem.Allocator, []const []const u8) void;

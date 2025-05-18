@@ -12,11 +12,15 @@ const Conf = struct {
     allocator: std.mem.Allocator,
     address: []const u8,
 
-    fn init(allocator: std.mem.Allocator, args: *ArgIterator) !Self {
+    fn init(allocator: std.mem.Allocator, args: []const []const u8) !Self {
         var address_opt: ?[]const u8 = null;
-        while (args.next()) |arg| {
+        var i: usize = 0;
+        while (i < args.len) : (i += 1) {
+            const arg = args[i];
             if (std.mem.eql(u8, "--address", arg)) {
-                if (args.next()) |adr| {
+                if (i + 1 < args.len) {
+                    i += 1;
+                    const adr = args[i];
                     if (address_opt) |address| {
                         allocator.free(address);
                     }
@@ -43,7 +47,7 @@ pub fn cmd() Cmd {
     };
 }
 
-pub fn serve(allocator: std.mem.Allocator, args: *ArgIterator) void {
+pub fn serve(allocator: std.mem.Allocator, args: []const []const u8) void {
     const flags = Conf.init(allocator, args) catch {
         print("ERROR - Unable to read flags.\n", .{});
         return;
