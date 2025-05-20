@@ -4,6 +4,8 @@ const std = @import("std");
 const os = @import("os");
 const cmd = @import("cmd.zig");
 
+const Copy = @import("utils/slices/Copy.zig");
+
 const print = std.debug.print;
 
 const commands = [_]cmd.Cmd{
@@ -78,21 +80,7 @@ const Args = struct {
     }
 };
 
-test "parse string" {
-    var f = Flags.init(std.testing.allocator);
-    defer f.deinit();
-    const args = [_][]const u8{
-        "--address", "address-1",
-        "--port",    "8081",
-    };
-    const addr = try f.arg("--address", "address-0");
-    const port = try f.arg("--port", "9090");
-
-    try f.parse(&args);
-
-    try std.testing.expectEqualDeep("address-1", addr.*);
-    try std.testing.expectEqualDeep("8081", port.*);
-
-    std.testing.allocator.free(addr.*);
-    std.testing.allocator.free(port.*);
+test "testing.." {
+    _ = Flags;
+    _ = Copy;
 }
