@@ -5,6 +5,7 @@ const os = @import("os");
 const cmd = @import("cmd.zig");
 
 const Copy = @import("utils/slices/Copy.zig");
+const ProcessMeta = @import("process/configs.zig");
 
 const print = std.debug.print;
 
@@ -83,4 +84,5 @@ const Args = struct {
 test "testing.." {
     _ = Flags;
     _ = Copy;
+    _ = ProcessMeta;
 }
