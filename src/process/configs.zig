@@ -7,7 +7,7 @@ const Text = types.Text;
 const ProcessMeta = struct {
     const Self = @This();
 
-    allocator: Allocator,
+    allocator: Allocator = undefined,
 
     name: Text,
     workdir: Text,
@@ -42,7 +42,6 @@ test "init and deinit" {
         .exec = &[_]Text{"exec-process"},
         .env = &[_]Text{"env-process"},
         .tags = &[_]Text{"tags-process"},
-        .allocator = undefined,
     }, std.testing.allocator);
     defer process.deinit();
 

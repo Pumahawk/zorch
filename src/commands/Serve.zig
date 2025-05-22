@@ -47,7 +47,26 @@ pub fn serve(allocator: std.mem.Allocator, args: []const []const u8) void {
     print("Address: {s}\n", .{flags.address});
     print("Start server.\n", .{});
 
+    const address = std.net.Address.parseIp("0.0.0.0", 9091) catch unreachable;
+    var server = address.listen(.{}) catch {
+        print("ERROR - Unable to listen.\n", .{});
+        return;
+    };
+    defer server.deinit();
+    const conn = server.accept() catch {
+        print("ERROR - Unable to accept requests.\n", .{});
+        return;
+    };
+
+    print("Start testing server  connection. nc localhost 9091\n", .{});
+    var buff: [100] u8 = undefined;
+    var s = conn.stream.read(&buff) catch 0;
+    while (s  > 0) : (s = conn.stream.read(&buff) catch 0) {
+        print("Read: {s}\n", .{buff[0..s]});
+    }
+
     // Testing Process creation and execution
+    print("Start testing process\n", .{});
     const cargs = &[_][]const u8{ "echo", "Hello, World" };
     var pr = Process.init(allocator, "echo", cargs);
     defer pr.deinit();
