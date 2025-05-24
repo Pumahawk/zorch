@@ -10,6 +10,9 @@ const Process = @import("../process/Process.zig");
 
 const print = std.debug.print;
 
+const controllers = @import("../server/controllers/controller.zig");
+const HelloWorldController = controllers.HelloWorldController;
+
 const Conf = struct {
     const Self = @This();
 
@@ -60,20 +63,20 @@ pub fn serve(allocator: std.mem.Allocator, args: []const []const u8) void {
         return;
     };
     defer server.deinit();
-    const conn = server.accept() catch {
-        print("ERROR - Unable to accept requests.\n", .{});
-        return;
-    };
+    req: while (true) {
+        const conn = server.accept() catch {
+            print("ERROR - Unable to accept requests.\n", .{});
+            return;
+        };
 
-    var buffHttp: [1080*1080] u8 = undefined;
-    var httpServer = std.http.Server.init(conn, &buffHttp);
-    var head = httpServer.receiveHead() catch {
-        print("ERROR - Unable to get header\n", .{});
-        return;
-    };
+        var buffHttp: [1080*1080] u8 = undefined;
+        var httpServer = std.http.Server.init(conn, &buffHttp);
+        var head = httpServer.receiveHead() catch {
+            print("ERROR - Unable to get header\n", .{});
+            break :req;
+        };
 
-    head.respond("Hello, Wolrd!\n", .{.status = std.http.Status.ok}) catch {
-        print("ERROR - Unable to send response\n", .{});
-        return;
-    };
+        print("INFO - Incoming request - Target: {s}\n", .{head.head.target});
+        HelloWorldController.controller().handler(.{}, &head);
+    }
 }
