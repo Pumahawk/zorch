@@ -15,14 +15,17 @@ const Conf = struct {
 
     allocator: std.mem.Allocator,
     address: []const u8,
+    port: u16,
 
     fn init(allocator: std.mem.Allocator, args: []const []const u8) !Self {
         var flags = Flags.init(allocator);
-        const address = try flags.arg("--address", "localshot:9000");
+        const address = try flags.arg("--ip", "127.0.0.1");
+        const port = try flags.arg("--port", "9090");
         try flags.parse(args);
         return .{
             .allocator = allocator,
             .address = address.*,
+            .port = try std.fmt.parseInt(u16, port.*, 10),
         };
     }
 
@@ -44,10 +47,14 @@ pub fn serve(allocator: std.mem.Allocator, args: []const []const u8) void {
         print("ERROR - Unable to read flags.\n", .{});
         return;
     };
-    print("Address: {s}\n", .{flags.address});
+    print("Address: {s}, Port: {d}\n", .{flags.address, flags.port});
     print("Start server.\n", .{});
 
-    const address = std.net.Address.parseIp("0.0.0.0", 9091) catch unreachable;
+    const address = std.net.Address.parseIp(flags.address, flags.port) catch {
+                print("ERROR - Unable to read address {s}\n", .{flags.address});
+                return;
+    };
+
     var server = address.listen(.{}) catch {
         print("ERROR - Unable to listen.\n", .{});
         return;
@@ -58,20 +65,15 @@ pub fn serve(allocator: std.mem.Allocator, args: []const []const u8) void {
         return;
     };
 
-    print("Start testing server  connection. nc localhost 9091\n", .{});
-    var buff: [100] u8 = undefined;
-    var s = conn.stream.read(&buff) catch 0;
-    while (s  > 0) : (s = conn.stream.read(&buff) catch 0) {
-        print("Read: {s}\n", .{buff[0..s]});
-    }
+    var buffHttp: [1080*1080] u8 = undefined;
+    var httpServer = std.http.Server.init(conn, &buffHttp);
+    var head = httpServer.receiveHead() catch {
+        print("ERROR - Unable to get header\n", .{});
+        return;
+    };
 
-    // Testing Process creation and execution
-    print("Start testing process\n", .{});
-    const cargs = &[_][]const u8{ "echo", "Hello, World" };
-    var pr = Process.init(allocator, "echo", cargs);
-    defer pr.deinit();
-    pr.run(allocator) catch {
-        print("ERROR - Unable to execute external process", .{});
+    head.respond("Hello, Wolrd!\n", .{.status = std.http.Status.ok}) catch {
+        print("ERROR - Unable to send response\n", .{});
         return;
     };
 }
