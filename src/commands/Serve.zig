@@ -7,8 +7,8 @@ const cmd_p = @import("../cmd.zig");
 const Cmd = cmd_p.Cmd;
 
 const Process = @import("../process/Process.zig");
-
-const print = std.debug.print;
+const logutil = @import("../utils/log.zig");
+const log = logutil.Logger.init("Serve");
 
 const controllers = @import("../server/controllers/controller.zig");
 const HelloWorldController = controllers.HelloWorldController;
@@ -47,36 +47,36 @@ pub fn cmd() Cmd {
 
 pub fn serve(allocator: std.mem.Allocator, args: []const []const u8) void {
     const flags = Conf.init(allocator, args) catch {
-        print("ERROR - Unable to read flags.\n", .{});
+        log.log("ERROR - Unable to read flags.\n", .{});
         return;
     };
-    print("Address: {s}, Port: {d}\n", .{flags.address, flags.port});
-    print("Start server.\n", .{});
+    log.log("Address: {s}, Port: {d}\n", .{flags.address, flags.port});
+    log.log("Start server.\n", .{});
 
     const address = std.net.Address.parseIp(flags.address, flags.port) catch {
-                print("ERROR - Unable to read address {s}\n", .{flags.address});
+                log.log("ERROR - Unable to read address {s}\n", .{flags.address});
                 return;
     };
 
     var server = address.listen(.{}) catch {
-        print("ERROR - Unable to listen.\n", .{});
+        log.log("ERROR - Unable to listen.\n", .{});
         return;
     };
     defer server.deinit();
     req: while (true) {
         const conn = server.accept() catch {
-            print("ERROR - Unable to accept requests.\n", .{});
+            log.log("ERROR - Unable to accept requests.\n", .{});
             return;
         };
 
-        var buffHttp: [1080*1080] u8 = undefined;
+        var buffHttp: [1080*5] u8 = undefined;
         var httpServer = std.http.Server.init(conn, &buffHttp);
         var head = httpServer.receiveHead() catch {
-            print("ERROR - Unable to get header\n", .{});
+            log.log("ERROR - Unable to get header\n", .{});
             break :req;
         };
 
-        print("INFO - Incoming request - Target: {s}\n", .{head.head.target});
+        log.log("INFO - Incoming request - Target: {s}\n", .{head.head.target});
         HelloWorldController.controller().handler(.{}, &head);
     }
 }
