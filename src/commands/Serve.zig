@@ -47,36 +47,36 @@ pub fn cmd() Cmd {
 
 pub fn serve(allocator: std.mem.Allocator, args: []const []const u8) void {
     const flags = Conf.init(allocator, args) catch {
-        log.log("ERROR - Unable to read flags.\n", .{});
+        log.info("ERROR - Unable to read flags.\n", .{});
         return;
     };
-    log.log("Address: {s}, Port: {d}\n", .{flags.address, flags.port});
-    log.log("Start server.\n", .{});
+    log.info("Address: {s}, Port: {d}\n", .{flags.address, flags.port});
+    log.info("Start server.\n", .{});
 
     const address = std.net.Address.parseIp(flags.address, flags.port) catch {
-                log.log("ERROR - Unable to read address {s}\n", .{flags.address});
+                log.info("ERROR - Unable to read address {s}\n", .{flags.address});
                 return;
     };
 
     var server = address.listen(.{}) catch {
-        log.log("ERROR - Unable to listen.\n", .{});
+        log.info("ERROR - Unable to listen.\n", .{});
         return;
     };
     defer server.deinit();
     req: while (true) {
         const conn = server.accept() catch {
-            log.log("ERROR - Unable to accept requests.\n", .{});
+            log.info("ERROR - Unable to accept requests.\n", .{});
             return;
         };
 
         var buffHttp: [1080*5] u8 = undefined;
         var httpServer = std.http.Server.init(conn, &buffHttp);
         var head = httpServer.receiveHead() catch {
-            log.log("ERROR - Unable to get header\n", .{});
+            log.info("ERROR - Unable to get header\n", .{});
             break :req;
         };
 
-        log.log("INFO - Incoming request - Target: {s}\n", .{head.head.target});
+        log.info("INFO - Incoming request - Target: {s}\n", .{head.head.target});
         HelloWorldController.controller().handler(.{}, &head);
     }
 }

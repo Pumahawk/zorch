@@ -1,7 +1,8 @@
 const std = @import("std");
 const RequestHttp = std.http.Server.Request;
 
-const print = std.debug.print;
+const loglib = @import("../../utils/log.zig");
+const log = loglib.Logger.init("Main");
 
 pub const Handler = fn (Context, *RequestHttp) void;
 
@@ -25,7 +26,7 @@ pub const HelloWorldController = struct {
 
     fn handle(_: Context, request: *RequestHttp) void {
         request.respond("Hello, World!\n", .{.status = std.http.Status.ok}) catch {
-            print("ERROR - Unable to send response\n", .{});
+            log.info("ERROR - Unable to send response\n", .{});
             return;
         };
     }

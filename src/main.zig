@@ -7,7 +7,8 @@ const cmd = @import("cmd.zig");
 const Copy = @import("utils/slices/Copy.zig");
 const ProcessMeta = @import("process/configs.zig");
 
-const print = std.debug.print;
+const loglib = @import("utils/log.zig");
+const log = loglib.Logger.init("Main");
 
 const commands = [_]cmd.Cmd{
     @import("commands/Serve.zig").cmd(),
@@ -47,7 +48,7 @@ fn isCommand(name: []const u8, command: cmd.Cmd) bool {
 }
 
 fn printCommandNotFound(name: []const u8) void {
-    print("Command not found. {s}\n", .{name});
+    log.info("Command not found. {s}\n", .{name});
 }
 
 const Args = struct {
