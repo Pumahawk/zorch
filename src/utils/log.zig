@@ -15,7 +15,7 @@ pub const Logger = struct {
     }
 
     pub fn info(self: Self, comptime fmt: []const u8, args: anytype) void {
-        const fmtc = "INFO " ++ fmt;
+        const fmtc = "INFO " ++ fmt ++ "\n";
         self.out.writer().print(fmtc, args) catch {
             // Ignore error
         };

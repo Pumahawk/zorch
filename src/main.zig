@@ -48,7 +48,7 @@ fn isCommand(name: []const u8, command: cmd.Cmd) bool {
 }
 
 fn printCommandNotFound(name: []const u8) void {
-    log.info("Command not found. {s}\n", .{name});
+    log.info("Command not found. {s}", .{name});
 }
 
 const Args = struct {
