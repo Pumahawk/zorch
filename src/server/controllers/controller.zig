@@ -26,7 +26,7 @@ pub const HelloWorldController = struct {
 
     fn handle(_: Context, request: *RequestHttp) void {
         request.respond("Hello, World!\n", .{.status = std.http.Status.ok}) catch {
-            log.info("ERROR - Unable to send response", .{});
+            log.err("Unable to send response", .{});
             return;
         };
     }
